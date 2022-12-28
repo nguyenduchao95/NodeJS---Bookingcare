@@ -53,7 +53,9 @@ let getAllDoctors = () => {
 let saveDetailInfoDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentMarkdown || !inputData.contentHTML) {
+            if (!inputData.doctorId || !inputData.contentMarkdown || !inputData.contentHTML || !inputData.action
+                || !inputData.selectedPrice || !inputData.selectedPayment || !inputData.selectedProvince
+                || !inputData.nameClinic || !inputData.addressClinic || !inputData.note) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
@@ -78,6 +80,32 @@ let saveDetailInfoDoctor = (inputData) => {
                         doctorMarkdown.updateAt = new Date()
                         await doctorMarkdown.save()
                     }
+                }
+
+                let doctorInfo = await db.Doctor_Info.findOne({
+                    where: { doctorId: inputData.doctorId },
+                    raw: false
+                })
+
+                if (doctorInfo) {
+                    doctorInfo.doctorId = inputData.doctorId
+                    doctorInfo.priceId = inputData.selectedPrice
+                    doctorInfo.provinceId = inputData.selectedProvince
+                    doctorInfo.paymentId = inputData.selectedPayment
+                    doctorInfo.addressClinic = inputData.addressClinic
+                    doctorInfo.nameClinic = inputData.nameClinic
+                    doctorInfo.note = inputData.note
+                    await doctorInfo.save()
+                } else {
+                    await db.Doctor_Info.create({
+                        doctorId: inputData.doctorId,
+                        priceId: inputData.selectedPrice,
+                        provinceId: inputData.selectedProvince,
+                        paymentId: inputData.selectedPayment,
+                        addressClinic: inputData.addressClinic,
+                        nameClinic: inputData.nameClinic,
+                        note: inputData.note
+                    })
                 }
 
                 resolve({
